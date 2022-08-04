@@ -1,0 +1,74 @@
+require('dotenv').config();
+
+const express = require('express');
+const mongoose = require('mongoose');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const rateLimit = require('express-rate-limit');
+const { celebrate, Joi, errors } = require('celebrate');
+
+// ---------------------------------
+
+const NotFoundError = require('./errors/not-found-error');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
+const { createUser, login } = require('./controllers/users');
+const { userRoutes } = require('./routes/users');
+const { movieRoutes } = require('./routes/movies');
+const { auth } = require('./middlewares/auth');
+
+// ---------------------------------
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+}); // Настройка лимитора
+
+// ---------------------------------
+
+const app = express(); // Создание приложения
+mongoose.connect('mongodb://localhost:27017/bitfilmsdb'); // Подключение к БД
+
+// ---------------------------------
+
+app.use(bodyParser.json()); // Подключение парсера
+app.use(cookieParser()); // Подключение парсера куков
+app.use(limiter); // Подключение лимитера
+
+app.use(requestLogger); // Подключение логгера запросов
+
+// ---------------------------------
+
+app.post('/signup', celebrate({
+  body: Joi.object().keys({
+    name: Joi.string().min(2).max(30),
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+  }),
+}), createUser);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required(),
+  }),
+}), login);
+
+
+app.use('/users', auth, userRoutes); // Роуты пользователей
+app.use('/movies', auth, movieRoutes); // Роуты понравившихся фильмов
+
+// ---------------------------------
+
+app.use(errorLogger); // Подключение логгера ошибок
+app.use(errors()); // Ошибки JOI и Celebrate
+
+app.use((req, res, next) => { next(new NotFoundError('Страница не найдена')); });
+
+app.use((err, req, res, next) => {
+  res.status(err.statusCode);
+  res.send({ message: err.message });
+  next();
+}); // Централизованный обработчик
+
+// ---------------------------------
+
+app.listen(3000); // Запуск сервера
