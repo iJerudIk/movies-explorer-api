@@ -4,7 +4,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cookieParser = require('cookie-parser');
 const bodyParser = require('body-parser');
-const rateLimit = require('express-rate-limit');
+const helmet = require('helmet');
 const { celebrate, Joi, errors } = require('celebrate');
 
 // ---------------------------------
@@ -12,16 +12,10 @@ const { celebrate, Joi, errors } = require('celebrate');
 const NotFoundError = require('./errors/not-found-error');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
 const { createUser, login } = require('./controllers/users');
+const { limiter } = require('./utils/utils');
 const { userRoutes } = require('./routes/users');
 const { movieRoutes } = require('./routes/movies');
 const { auth } = require('./middlewares/auth');
-
-// ---------------------------------
-
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 200,
-}); // Настройка лимитора
 
 // ---------------------------------
 
@@ -32,6 +26,7 @@ mongoose.connect('mongodb://localhost:27017/bitfilmsdb'); // Подключен�
 
 app.use(bodyParser.json()); // Подключение парсера
 app.use(cookieParser()); // Подключение парсера куков
+app.use(helmet()); // Настройка заголовков ответа
 app.use(limiter); // Подключение лимитера
 
 app.use(requestLogger); // Подключение логгера запросов
@@ -40,7 +35,7 @@ app.use(requestLogger); // Подключение логгера запросо�
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
-    name: Joi.string().min(2).max(30),
+    name: Joi.string().min(2).max(30).required(),
     email: Joi.string().required().email(),
     password: Joi.string().required(),
   }),
@@ -51,7 +46,6 @@ app.post('/signin', celebrate({
     password: Joi.string().required(),
   }),
 }), login);
-
 
 app.use('/users', auth, userRoutes); // Роуты пользователей
 app.use('/movies', auth, movieRoutes); // Роуты понравившихся фильмов

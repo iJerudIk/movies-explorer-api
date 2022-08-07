@@ -19,8 +19,8 @@ router.post('/', celebrate({
     trailerLink: Joi.string().pattern(/(https?:\/\/)(w{3}\.)?([\W\\\da-z-]{2,200})/).required(),
     thumbnail: Joi.string().pattern(/(https?:\/\/)(w{3}\.)?([\W\\\da-z-]{2,200})/).required(),
     movieId: Joi.string().required(),
-    nameRU: Joi.string().pattern(/[а-яё\S\ ]/).required(),
-    nameEN: Joi.string().pattern(/[a-z\S\ ]/).required(),
+    nameRU: Joi.string().pattern(/[а-яё\S ]/).required(),
+    nameEN: Joi.string().pattern(/[a-z\S ]/).required(),
   }),
 }), createMovie); // Создание нового фильма
 router.delete('/:movieId', celebrate({

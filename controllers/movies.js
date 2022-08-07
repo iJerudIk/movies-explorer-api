@@ -1,11 +1,7 @@
-const bcrypt = require('bcryptjs');
-
-// ---------------------------------
-
 const Movie = require('../models/movie');
 const NotFoundError = require('../errors/not-found-error');
+const ForbiddenError = require('../errors/forbidden-error');
 const { checkErrors } = require('../utils/utils');
-const { NODE_ENV, JWT_SECRET } = process.env;
 
 // ---------------------------------
 
@@ -18,7 +14,7 @@ module.exports.createMovie = (req, res, next) => {
   const owner = req.user._id;
   Movie.create({ ...req.body, owner })
     .then((data) => { res.status(201).send(data); })
-    .catch((err) => { console.log(err) });
+    .catch((err) => { checkErrors(err, res, next); });
 };
 module.exports.deleteMovie = (req, res, next) => {
   const { movieId } = req.params;

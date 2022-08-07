@@ -58,12 +58,12 @@ const movieSchema = mongoose.Schema({
   },
   nameRU: {
     type: String,
-    pattern: /[а-яё\S\ ]/gi,
+    pattern: /[а-яё\S ]/gi,
     required: true,
   },
-  nameRU: {
+  nameEN: {
     type: String,
-    pattern: /[a-z\S\ ]/gi,
+    pattern: /[a-z\S ]/gi,
     required: true,
   },
 });

@@ -1,3 +1,7 @@
+const rateLimit = require('express-rate-limit');
+
+// ---------------------------------
+
 const ValidationError = require('../errors/validation-error');
 const ConflictError = require('../errors/conflict-error');
 const InternalServerError = require('../errors/internal-server-error');
@@ -20,6 +24,12 @@ module.exports.checkErrors = (err, res, next) => {
   next(new InternalServerError('Неизвестная ошибка сервера'));
 };
 
+module.exports.limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 200,
+});
+
+/*
 const registration =
 {
   "email": "iJerudIk@gmail.com",
@@ -40,3 +50,4 @@ const film =
   "nameRU": "Джокер",
   "nameEN": "Joker"
 }
+*/
