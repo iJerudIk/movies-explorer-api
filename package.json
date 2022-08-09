@@ -1,7 +1,7 @@
 {
   "name": "moviesexplorerapi",
   "version": "0.0.1",
-  "description": "",
+  "description": "Backend of the project Movies-Explorer",
   "main": "index.js",
   "scripts": {
     "lint": "npx eslint .",
